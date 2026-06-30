@@ -148,16 +148,21 @@ th{color:var(--muted);font-family:'Kanit';font-weight:500}
 /* ====== CONFIG (ต้องตรงกับ index.html) ====== */
 const API='https://script.google.com/macros/s/AKfycbxrXSByL3_79MT_jCv_SvOC0oq6cENctJddm3jYBYA8LVaRERAedyQivHauScJPGmHy/exec';
 
-const FISCAL_MONTHS=['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+const FISCAL_MONTHS=['ตุลาคม','พฤศจิกายน','ธันวาคม','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน'];
 const DISTRICTS=['เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
 const FIELDS=['red','yellow','suppressed','remaining','targetPct','resultPct','complaints','patrols','operations','arrests','status','note'];
 let SESSION={district:null,pin:null,role:null};
 let importRows=[];
 
+/* ปีงบ + เดือนงบประมาณปัจจุบันจริง (ปีงบเริ่ม 1 ตุลาคม) */
+function currentThaiFY(){ const d=new Date(); let y=d.getFullYear()+543; if(d.getMonth()>=9) y+=1; return y; }
+function currentFiscalMonth(){ return ((new Date().getMonth()+3)%12)+1; } // ตุลาคม=1 ... กันยายน=12
+
 /* init selects */
 document.getElementById('district').innerHTML=DISTRICTS.map(d=>`<option>${d}</option>`).join('');
 document.getElementById('fMonth').innerHTML=FISCAL_MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
-document.getElementById('fMonth').value=8; // พ.ค.
+document.getElementById('fMonth').value=currentFiscalMonth();   // ตั้งเดือนปัจจุบันให้เริ่มกรอกได้เลย
+document.getElementById('fFy').value=currentThaiFY();           // ปีงบปัจจุบัน (เปลี่ยนเป็นปีอื่นได้)
 
 /* ====== JSONP ====== */
 function jsonp(params){
@@ -242,12 +247,14 @@ async function exportDistrict(){
 }
 
 /* ====== เทมเพลต ====== */
-const TPL_HEADERS=[['ปีงบประมาณ','ลำดับเดือน(1=ต.ค.,12=ก.ย.)','อำเภอ','สีแดง','สีเหลือง','ปราบปราม/ถอดถอน','คงเหลือ','เป้าหมาย%','ผล%','รับแจ้งเบาะแส','ลงพื้นที่','ปฏิบัติการ','จับกุม','ผลการดำเนินงาน','หมายเหตุ']];
+const TPL_HEADERS=[['ปีงบประมาณ','ลำดับเดือน(1=ตุลาคม,12=กันยายน)','อำเภอ','สีแดง','สีเหลือง','ปราบปราม/ถอดถอน','คงเหลือ','เป้าหมาย%','ผล%','รับแจ้งเบาะแส','ลงพื้นที่','ปฏิบัติการ','จับกุม','ผลการดำเนินงาน','หมายเหตุ']];
 const TPL_KEYS=['fiscalYear','monthOrder','district','red','yellow','suppressed','remaining','targetPct','resultPct','complaints','patrols','operations','arrests','status','note'];
 function downloadTemplate(){
   const wb=XLSX.utils.book_new();
   const data=TPL_HEADERS.slice();
-  DISTRICTS.forEach(d=>data.push([2569,8,d,0,0,0,0,100,100,0,0,0,0,'',''])); 
+  const fy=currentThaiFY();
+  // ปีงบปัจจุบัน × 12 เดือน × ทุกอำเภอ (อยากกรอกปีอื่นแก้คอลัมน์ปีงบได้)
+  for(let mo=1;mo<=12;mo++){ DISTRICTS.forEach(d=>data.push([fy,mo,d,0,0,0,0,100,100,0,0,0,0,'',''])); }
   const ws=XLSX.utils.aoa_to_sheet(data);
   ws['!cols']=TPL_HEADERS[0].map(h=>({wch:Math.max(10,h.length+2)}));
   XLSX.utils.book_append_sheet(wb,ws,'ข้อมูลรายอำเภอ');

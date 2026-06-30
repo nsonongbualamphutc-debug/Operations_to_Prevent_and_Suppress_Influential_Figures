@@ -26,6 +26,11 @@
   --bg:#eef3fb; --bg2:#dfe8f6; --panel:rgba(255,255,255,.82); --panel2:rgba(255,255,255,.95);
   --stroke:rgba(20,60,130,.14); --txt:#11203c; --muted:#566787; --shadow:0 16px 40px rgba(20,50,110,.14);
 }
+/* readable accent text on light background */
+[data-theme="light"] .brand-sub b{color:#a8740d}
+[data-theme="light"] .verdict.warn .vmain b,[data-theme="light"] .verdict.alert .vmain b{color:#a8740d}
+[data-theme="light"] .kpi.gold .k-num{color:#b3800f}
+[data-theme="light"] .kpi.cyan .k-num{color:#137fb8}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -184,18 +189,27 @@ tr.total{font-weight:700;background:rgba(245,196,81,.08)}
 // 🔵 วาง URL ของ Web App (ลงท้าย /exec) ที่ได้จากการ Deploy Apps Script ตรงนี้
 const API = 'https://script.google.com/macros/s/AKfycbxrXSByL3_79MT_jCv_SvOC0oq6cENctJddm3jYBYA8LVaRERAedyQivHauScJPGmHy/exec';
 
-const FISCAL_MONTHS=['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+const FISCAL_MONTHS=['ตุลาคม','พฤศจิกายน','ธันวาคม','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน'];
+/* ปีงบประมาณไทยปัจจุบัน (เริ่ม 1 ต.ค.) — ใช้เลือกปีเริ่มต้นของแดชบอร์ด */
+function currentThaiFY(){ const d=new Date(); let y=d.getFullYear()+543; if(d.getMonth()>=9) y+=1; return y; }
 const DISTRICTS=['เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
 
-/* ตัวอย่างข้อมูล (ใช้แสดงเมื่อยังไม่ตั้งค่า API) — ตรงกับแผนปฏิบัติการ */
-const DEMO=[
- {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'เมืองหนองบัวลำภู',red:0,yellow:2,suppressed:2,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
- {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'ศรีบุญเรือง',red:0,yellow:0,suppressed:0,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
- {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'นากลาง',red:0,yellow:2,suppressed:2,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
- {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'โนนสัง',red:0,yellow:0,suppressed:0,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
- {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'สุวรรณคูหา',red:1,yellow:0,suppressed:1,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
- {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'นาวัง',red:0,yellow:2,suppressed:2,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''}
-];
+/* ตัวอย่างข้อมูล (ใช้แสดงเมื่อยังไม่ตั้งค่า API) — ครบ 12 เดือน ปีงบปัจจุบัน ตามแผนปฏิบัติการ
+   หมายเหตุ: ตัวกรองปีในแดชบอร์ดดึงจากข้อมูลจริง ปีงบใหม่จะปรากฏเองเมื่อมีการกรอกผ่านระบบ */
+const DEMO_SEED={'เมืองหนองบัวลำภู':[0,2],'ศรีบุญเรือง':[0,0],'นากลาง':[0,2],'โนนสัง':[0,0],'สุวรรณคูหา':[1,0],'นาวัง':[0,2]};
+const DEMO=(function(){
+  const out=[];
+  for(let mo=1;mo<=12;mo++){
+    DISTRICTS.forEach(d=>{
+      const [red,yellow]=DEMO_SEED[d]||[0,0];
+      out.push({fiscalYear:2569,month:FISCAL_MONTHS[mo-1],monthOrder:mo,district:d,
+        red,yellow,suppressed:red+yellow,remaining:0,targetPct:100,resultPct:100,
+        complaints:0,patrols:0,operations:0,arrests:0,
+        status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''});
+    });
+  }
+  return out;
+})();
 
 let RAW=[], META=null, charts={};
 const state={fy:null, month:'ALL', district:'ALL', demo:false};
@@ -227,7 +241,8 @@ async function load(){
   }
   if(!RAW.length){ RAW=DEMO.slice(); state.demo=true; }
   const fys=[...new Set(RAW.map(r=>+r.fiscalYear))].sort((a,b)=>b-a);
-  state.fy=fys[0];
+  const cfy=currentThaiFY();
+  state.fy = fys.includes(cfy) ? cfy : fys[0]; // เปิดมาที่ปีงบปัจจุบัน ถ้ามีข้อมูล
   render();
 }
 
@@ -494,7 +509,11 @@ function toast(msg){
   t.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#0e1d3a;color:#eaf1ff;padding:12px 20px;border-radius:12px;border:1px solid rgba(120,170,255,.3);z-index:99999;box-shadow:0 10px 30px rgba(0,0,0,.4);font-family:Sarabun';
   document.body.appendChild(t);setTimeout(()=>t.remove(),2600);
 }
-try{const th=localStorage.getItem('nbl_theme'); if(th)document.body.setAttribute('data-theme',th);}catch(e){}
+try{
+  const TV='2'; // bump to force every device back to dark once
+  if(localStorage.getItem('nbl_theme_v')!==TV){localStorage.setItem('nbl_theme','');localStorage.setItem('nbl_theme_v',TV);}
+  const th=localStorage.getItem('nbl_theme'); document.body.setAttribute('data-theme',th||'');
+}catch(e){document.body.setAttribute('data-theme','');}
 
 /* ===================== Presentation ===================== */
 const Present={
@@ -534,7 +553,7 @@ const Present={
     S.push(`<div class="slide"><div class="s-eyebrow">เปรียบเทียบรายอำเภอ</div><h2>บัญชีเฝ้าระวังแยกรายอำเภอ</h2>
       <div class="p-chart"><canvas id="pcDist"></canvas></div></div>`);
     // Slide 5 — closing
-    S.push(`<div class="slide"><div class="s-eyebrow">เป้าหมาย 4 เดือนสุดท้าย (มิ.ย.–ก.ย. ${state.fy})</div>
+    S.push(`<div class="slide"><div class="s-eyebrow">เป้าหมาย 4 เดือนสุดท้าย (มิถุนายน–กันยายน ${state.fy})</div>
       <h2>ดำเนินการต่อเรื่องผู้มีอิทธิพล<br>ในพื้นที่ <span style="color:#f5c451">ร้อยละ 100</span></h2>
       <div class="s-sub">ส่งเสริมการมีส่วนร่วมภาคประชาชน • เฝ้าระวังในพื้นที่ • ปราบปรามจับกุม</div></div>`);
     document.getElementById('slides').innerHTML=S.join('');

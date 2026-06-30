@@ -17,21 +17,25 @@
  *        - Who has access : Anyone
  *      คัดลอก URL ที่ได้ (ลงท้าย /exec) ไปวางใน index.html และ input.html (ตัวแปร API)
  *
- * วิธีเปลี่ยนรหัสผ่าน
- *   - แก้ค่า PIN ในฟังก์ชัน printHashes() แล้วรัน → ดูค่า hash ใน Log
- *     นำ hash ที่ได้มาวางทับใน PIN_HASH ด้านล่าง (รหัสจริงจะไม่ถูกเก็บในไฟล์)
+ * วิธีเปลี่ยนรหัสผ่าน (รหัสจริงจะไม่ถูกเก็บในไฟล์)
+ *   1) เมนูซ้าย Project Settings > Script Properties > Add property
+ *        - key: GEN_DISTRICT   value: ชื่ออำเภอ (หรือ ADMIN)
+ *        - key: GEN_PIN        value: รหัสที่ต้องการ
+ *   2) รันฟังก์ชัน genHash() แล้วดูค่า hash ที่ View > Logs
+ *   3) นำ hash ไปวางทับบรรทัดของอำเภอนั้นใน PIN_HASH ด้านล่าง
+ *   4) ลบ property GEN_PIN ทิ้ง แล้ว Deploy ใหม่
  *************************************************************************************/
 
 /** ====== ตั้งค่า ====== */
-var SHEET_ID  = 'ใส่_GOOGLE_SHEET_ID_ตรงนี้';   // <-- แก้เป็น ID ชีตของคุณ
+var SHEET_ID  = '1ATafnXnhe4NrOrK2e2IPwvyu_yvBBkexASEEhUR9Nss';   // <-- แก้เป็น ID ชีตของคุณ
 var DATA_TAB  = 'Data';
 var SALT      = 'nbl-influence-2569';            // เกลือผสมรหัส (เปลี่ยนได้ แต่ต้อง re-hash)
 
 /** รายชื่ออำเภอ (ลำดับตามเอกสาร) */
 var DISTRICTS = ['เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
 
-/** เดือนตามปีงบประมาณ (ต.ค.=1 ... ก.ย.=12) */
-var FISCAL_MONTHS = ['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+/** เดือนตามปีงบประมาณ (ตุลาคม=1 ... กันยายน=12) */
+var FISCAL_MONTHS = ['ตุลาคม','พฤศจิกายน','ธันวาคม','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน'];
 
 /** หัวคอลัมน์ของชีต (ลำดับสำคัญ) */
 var HEADERS = ['fiscalYear','month','monthOrder','district',
@@ -45,17 +49,15 @@ var NUM_FIELDS = ['fiscalYear','monthOrder','red','yellow','suppressed','remaini
 
 /**
  * รหัสผ่าน (เก็บเป็น SHA-256 เท่านั้น — รหัสจริงไม่อยู่ในไฟล์)
- * ค่าเริ่มต้น (โปรดเปลี่ยน): เมือง=1101, ศรีบุญเรือง=1102, นากลาง=1103,
- *                          โนนสัง=1104, สุวรรณคูหา=1105, นาวัง=1106, ผู้ดูแล=9999
  */
 var PIN_HASH = {
-  'เมืองหนองบัวลำภู':'815beff5666abf0fa5bb0c66a8abc1ba3c940d66afa99d9fcafa97476a0aa264',
-  'ศรีบุญเรือง'    :'14d6e8c9d2736004311705514862e2a165a579357365de196024151c2fcdd524',
-  'นากลาง'         :'b02a56f3121e6a8f245c7ea070de92817f9a18c99935c98ea36426ed233d929a',
-  'โนนสัง'         :'caa9fe6f839a8a9536b1d5452268c9b9107c5b325fcfe942b4179a99ba7bf3a7',
-  'สุวรรณคูหา'     :'51f90d9824f62f8162fa116b439b431d35d7e16d42968562efd5b35d54e2e968',
-  'นาวัง'          :'7913f81946168acdd759576c8be6f6da1156d4deb87dcae891ac79ca2f27b459',
-  'ADMIN'          :'bc3fbccda9d5c8a903103982f07dd504c5e6aa045e6f83083f5cd3897a9adaed'
+  'เมืองหนองบัวลำภู':'99ac1e19fbb4c2314a2ddb84edbcbebd00a2c33d6eec60163c52c5b42e3cdb73',
+  'ศรีบุญเรือง'    :'d0cfe74166f6b45d0b3b832eb7cf065fcd5a955797d88a42d66bdc9e401dd8e9',
+  'นากลาง'         :'59f72ece39791b9e84ea8459eb09ff24f1be1d4a6329f736e27277f48e7fd967',
+  'โนนสัง'         :'62057b4a622861016802b28afd0e36aca90ec1cdf20bdecfce12411e0d0427c7',
+  'สุวรรณคูหา'     :'c4eda13d563113d9893427f586ea3bac73de3d9721ee6efd026f78f66ac84b0b',
+  'นาวัง'          :'bd3d09d1cda327c2f5fa9feb4e11e76b739652790e0391d08781b8f635b9082c',
+  'ADMIN'          :'73076caad34ecb93de40cfc7addab30a5d65a1cd428966c933a3b5a66a7a6043'
 };
 
 /** ====== Utilities ====== */
@@ -183,7 +185,7 @@ function buildObjFromParams(p){
 
 /** ====== ติดตั้งครั้งแรก / ยูทิลิตี้ ====== */
 
-/** สร้างหัวตาราง + ใส่ข้อมูลตั้งต้นจากแผนปฏิบัติการ (8 เดือนแรก ปีงบ 2569) */
+/** สร้างหัวตาราง + ใส่ข้อมูลตั้งต้นจากแผนปฏิบัติการ — ครบ 12 เดือน ปีงบ 2569 */
 function setup(){
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sh = ss.getSheetByName(DATA_TAB);
@@ -200,37 +202,42 @@ function setup(){
     'สุวรรณคูหา'     :{red:1,yellow:0},
     'นาวัง'          :{red:0,yellow:2}
   };
-  var fy = 2569, mo = 8; // พ.ค. = ลำดับที่ 8 ของปีงบประมาณ
+  var SEED_FY = 2569; // ปีงบของแผนปฏิบัติการนี้ ; ปีถัดไปจะเกิดเองเมื่อมีการกรอกผ่านระบบ
   var now = new Date().toISOString();
-  DISTRICTS.forEach(function(d){
-    var s = seed[d] || {red:0,yellow:0};
-    var suppressed = s.red + s.yellow; // ถอดถอน/ปราบปรามแล้วทั้งหมด
-    var line = {
-      fiscalYear:fy, month:FISCAL_MONTHS[mo-1], monthOrder:mo, district:d,
-      red:s.red, yellow:s.yellow, suppressed:suppressed, remaining:0,
-      targetPct:100, resultPct:100,
-      complaints:0, patrols:0, operations:0, arrests:0,
-      status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว', note:'',
-      updatedAt:now, updatedBy:'setup'
-    };
-    sh.appendRow(HEADERS.map(function(h){ return line[h]; }));
-  });
+  var rows = [];
+  // วนทุกเดือน (ตุลาคม=1 ... กันยายน=12) × ทุกอำเภอ = 72 แถว สำหรับปีงบปัจจุบัน
+  for (var mo = 1; mo <= 12; mo++){
+    DISTRICTS.forEach(function(d){
+      var s = seed[d] || {red:0,yellow:0};
+      var suppressed = s.red + s.yellow; // ถอดถอน/ปราบปรามแล้วทั้งหมด
+      var line = {
+        fiscalYear:SEED_FY, month:FISCAL_MONTHS[mo-1], monthOrder:mo, district:d,
+        red:s.red, yellow:s.yellow, suppressed:suppressed, remaining:0,
+        targetPct:100, resultPct:100,
+        complaints:0, patrols:0, operations:0, arrests:0,
+        status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว', note:'',
+        updatedAt:now, updatedBy:'setup'
+      };
+      rows.push(HEADERS.map(function(h){ return line[h]; }));
+    });
+  }
+  sh.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
   SpreadsheetApp.flush();
-  Logger.log('setup เสร็จสิ้น: ใส่ข้อมูล %s อำเภอ', DISTRICTS.length);
+  Logger.log('setup เสร็จสิ้น: ใส่ข้อมูล %s แถว (ปีงบ %s × 12 เดือน × %s อำเภอ)', rows.length, SEED_FY, DISTRICTS.length);
 }
 
-/** พิมพ์ค่า hash สำหรับ PIN ที่ต้องการ — แก้ map ด้านล่างแล้วรัน ดูผลใน Execution log */
-function printHashes(){
-  var pins = {
-    'เมืองหนองบัวลำภู':'1101',
-    'ศรีบุญเรือง'    :'1102',
-    'นากลาง'         :'1103',
-    'โนนสัง'         :'1104',
-    'สุวรรณคูหา'     :'1105',
-    'นาวัง'          :'1106',
-    'ADMIN'          :'9999'
-  };
-  Object.keys(pins).forEach(function(d){
-    Logger.log("'%s':'%s',", d, hashOf(d, pins[d]));
-  });
+/** สร้างค่า hash โดยอ่านรหัสจาก Script Properties (รหัสจริงไม่อยู่ในโค้ด)
+ *  ตั้ง property GEN_DISTRICT และ GEN_PIN ก่อน แล้วรันฟังก์ชันนี้ ดูผลที่ Logs
+ *  เสร็จแล้วควรลบ property GEN_PIN ทิ้งทันที */
+function genHash(){
+  var props = PropertiesService.getScriptProperties();
+  var d = props.getProperty('GEN_DISTRICT');
+  var p = props.getProperty('GEN_PIN');
+  if (!d || !p){
+    Logger.log('โปรดตั้ง Script Property: GEN_DISTRICT (ชื่ออำเภอ/ADMIN) และ GEN_PIN (รหัส) ก่อนรัน');
+    return;
+  }
+  Logger.log("คัดบรรทัดนี้ไปวางใน PIN_HASH:");
+  Logger.log("  '%s':'%s',", d, hashOf(d, p));
+  Logger.log("** อย่าลืมลบ property GEN_PIN ทิ้งหลังใช้งาน **");
 }
