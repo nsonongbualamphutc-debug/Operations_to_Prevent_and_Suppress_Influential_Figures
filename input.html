@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a1428">
+<title>ระบบกรอกข้อมูล • ผู้มีอิทธิพล จ.หนองบัวลำภู</title>
+<link rel="icon" href="province-seal.png">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0a1428;--bg2:#0e1d3a;--panel:rgba(20,36,68,.7);--panel2:rgba(15,28,56,.9);
+  --stroke:rgba(120,170,255,.18);--txt:#eaf1ff;--muted:#9fb4d8;--gold:#f5c451;--cyan:#3fd0ff;--green:#34e3a4;--red:#ff5a6e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun','Kanit',sans-serif;color:var(--txt);min-height:100vh;
+  background:radial-gradient(1000px 560px at 10% -8%,rgba(63,208,255,.16),transparent 60%),
+   radial-gradient(900px 500px at 95% 5%,rgba(245,196,81,.12),transparent 55%),
+   linear-gradient(160deg,var(--bg),var(--bg2));background-attachment:fixed}
+.wrap{max-width:920px;margin:0 auto;padding:18px 16px 60px}
+h1,h2,h3,label.big{font-family:'Kanit'}
+.top{display:flex;gap:14px;align-items:center;background:var(--panel);backdrop-filter:blur(12px);
+  border:1px solid var(--stroke);border-radius:20px;padding:14px 18px;box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.top img{height:52px}
+.top .t{flex:1}.top .t h1{font-size:1.15rem}.top .t p{color:var(--muted);font-size:.84rem;margin-top:2px}
+.top a{color:var(--cyan);text-decoration:none;font-family:'Kanit';font-size:.88rem;border:1px solid var(--stroke);
+  padding:8px 13px;border-radius:11px}
+.card{background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--stroke);
+  border-radius:20px;padding:22px;box-shadow:0 16px 40px rgba(0,0,0,.4);margin-top:16px}
+.card h2{font-size:1.05rem;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.card h2 .bar{width:5px;height:18px;border-radius:3px;background:linear-gradient(var(--cyan),var(--gold))}
+label{display:block;font-size:.8rem;color:var(--muted);margin:0 0 5px 2px}
+input,select,textarea{width:100%;font-family:'Sarabun';font-size:.95rem;color:var(--txt);
+  background:var(--panel2);border:1px solid var(--stroke);border-radius:12px;padding:11px 13px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--cyan)}
+textarea{min-height:70px;resize:vertical}
+.row{display:grid;gap:13px}
+.r2{grid-template-columns:1fr 1fr}.r3{grid-template-columns:1fr 1fr 1fr}.r4{grid-template-columns:repeat(4,1fr)}
+.field{margin-bottom:13px}
+.btn{cursor:pointer;border:none;font-family:'Kanit';font-size:.95rem;padding:12px 20px;border-radius:13px;
+  display:inline-flex;gap:8px;align-items:center;transition:.18s transform}
+.btn:hover{transform:translateY(-2px)}
+.btn.gold{background:linear-gradient(135deg,#f5c451,#e0a32e);color:#2a1d00;font-weight:600}
+.btn.cyan{background:linear-gradient(135deg,#3fd0ff,#1f9ed6);color:#022235;font-weight:600}
+.btn.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--stroke)}
+.btn.green{background:linear-gradient(135deg,#34e3a4,#1faf7c);color:#022a1d;font-weight:600}
+.hint{color:var(--muted);font-size:.8rem;margin-top:8px;line-height:1.6}
+.sec-title{font-family:'Kanit';color:var(--gold);font-size:.82rem;letter-spacing:.5px;margin:16px 0 8px;text-transform:uppercase}
+.lock{display:none}.lock.show{display:block}
+.locked .editzone{opacity:.35;pointer-events:none;filter:grayscale(.4)}
+.pin-box{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.pin-box .field{flex:1;min-width:160px;margin:0}
+.tag{display:inline-block;background:rgba(52,227,164,.16);color:var(--green);padding:4px 12px;border-radius:999px;font-size:.8rem}
+.divider{height:1px;background:var(--stroke);margin:18px 0}
+.filebox{border:2px dashed var(--stroke);border-radius:14px;padding:18px;text-align:center;color:var(--muted);cursor:pointer}
+.filebox:hover{border-color:var(--cyan);color:var(--txt)}
+table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--stroke);text-align:center}
+th{color:var(--muted);font-family:'Kanit';font-weight:500}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#0e1d3a;color:#eaf1ff;
+  padding:13px 22px;border-radius:13px;border:1px solid var(--stroke);box-shadow:0 12px 30px rgba(0,0,0,.4);
+  display:none;z-index:999;font-family:Sarabun;max-width:90vw}
+@media(max-width:640px){.r2,.r3,.r4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img src="province-seal.png" alt="">
+    <div class="t"><h1>ระบบกรอกข้อมูลรายอำเภอ</h1>
+      <p>การป้องกันและปราบปรามผู้มีอิทธิพล จังหวัดหนองบัวลำภู</p></div>
+    <a href="index.html">← กลับแดชบอร์ด</a>
+  </div>
+
+  <!-- ===== เข้าสู่ระบบ ===== -->
+  <div class="card" id="loginCard">
+    <h2><span class="bar"></span>เข้าสู่ระบบรายอำเภอ</h2>
+    <div class="pin-box">
+      <div class="field"><label>เลือกอำเภอ</label>
+        <select id="district"></select></div>
+      <div class="field"><label>รหัสผ่านของอำเภอ (PIN)</label>
+        <input type="password" id="pin" placeholder="กรอกรหัส 4 หลัก" autocomplete="off"></div>
+      <button class="btn cyan" onclick="doAuth()">🔓 เข้าสู่ระบบ</button>
+    </div>
+    <div class="hint">แต่ละอำเภอมีรหัสผ่านของตนเอง • รหัสผู้ดูแลระบบสามารถแก้ไขได้ทุกอำเภอและนำเข้าไฟล์ Excel ได้
+      <br>หากลืมรหัส ติดต่อผู้ดูแลระบบ (กลุ่มงานความมั่นคง ที่ทำการปกครองจังหวัด)</div>
+  </div>
+
+  <!-- ===== แก้ไขข้อมูล ===== -->
+  <div class="card lock" id="editCard">
+    <h2><span class="bar"></span>กรอก / แก้ไขข้อมูล <span class="tag" id="whoTag"></span></h2>
+
+    <div class="row r3">
+      <div class="field"><label>ปีงบประมาณ (พ.ศ.)</label><input id="fFy" type="number" value="2569"></div>
+      <div class="field"><label>เดือนที่รายงาน</label><select id="fMonth"></select></div>
+      <div class="field" style="display:flex;align-items:flex-end">
+        <button class="btn ghost" style="width:100%" onclick="loadLatest()">↻ อ่านค่าล่าสุดมาแก้</button></div>
+    </div>
+
+    <div class="sec-title">บัญชีเฝ้าระวัง</div>
+    <div class="row r4">
+      <div class="field"><label>สีแดง (ผู้มีอิทธิพล)</label><input id="red" type="number" min="0" value="0"></div>
+      <div class="field"><label>สีเหลือง (เฝ้าระวัง)</label><input id="yellow" type="number" min="0" value="0"></div>
+      <div class="field"><label>ปราบปราม/ถอดถอนแล้ว</label><input id="suppressed" type="number" min="0" value="0"></div>
+      <div class="field"><label>คงเหลือปัจจุบัน</label><input id="remaining" type="number" min="0" value="0"></div>
+    </div>
+    <div class="row r2">
+      <div class="field"><label>เป้าหมายดำเนินการ (ร้อยละ)</label><input id="targetPct" type="number" min="0" max="100" value="100"></div>
+      <div class="field"><label>ผลการดำเนินการ (ร้อยละ)</label><input id="resultPct" type="number" min="0" max="100" value="100"></div>
+    </div>
+
+    <div class="sec-title">ผลงานตามมาตรการ (ในรอบเดือน)</div>
+    <div class="row r4">
+      <div class="field"><label>รับแจ้งเบาะแส (เรื่อง)</label><input id="complaints" type="number" min="0" value="0"></div>
+      <div class="field"><label>ลงพื้นที่เฝ้าระวัง (ครั้ง)</label><input id="patrols" type="number" min="0" value="0"></div>
+      <div class="field"><label>ปฏิบัติการปราบปราม (ครั้ง)</label><input id="operations" type="number" min="0" value="0"></div>
+      <div class="field"><label>จับกุม/ดำเนินคดี (ราย)</label><input id="arrests" type="number" min="0" value="0"></div>
+    </div>
+
+    <div class="field"><label>ผลการดำเนินงาน (สรุปสั้น)</label>
+      <input id="status" placeholder="เช่น ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว"></div>
+    <div class="field"><label>หมายเหตุ</label><textarea id="note" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></textarea></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+      <button class="btn green" onclick="saveRow()">💾 บันทึกข้อมูล</button>
+      <button class="btn ghost" onclick="exportDistrict()">⬇ ส่งออก Excel (อำเภอนี้)</button>
+      <button class="btn ghost" onclick="logout()">ออกจากระบบ</button>
+    </div>
+    <div class="hint">วิธีแก้บนระบบ: เลือกเดือน → กด “อ่านค่าล่าสุดมาแก้” → แก้ตัวเลข → กดบันทึก (ระบบจะเขียนทับเดือนเดิม)</div>
+
+    <!-- ===== นำเข้า Excel (เฉพาะผู้ดูแล) ===== -->
+    <div class="lock" id="importZone">
+      <div class="divider"></div>
+      <div class="sec-title">นำเข้าไฟล์ Excel (เฉพาะผู้ดูแลระบบ)</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn gold" onclick="downloadTemplate()">⬇ ดาวน์โหลดเทมเพลต Excel</button>
+      </div>
+      <div class="filebox" id="dropBox" onclick="document.getElementById('xlsx').click()">
+        📁 คลิกเพื่อเลือกไฟล์ .xlsx ที่กรอกแล้ว — ระบบจะอ่านและนำเข้าทุกอำเภอพร้อมกัน
+      </div>
+      <input type="file" id="xlsx" accept=".xlsx,.xls,.csv" style="display:none" onchange="parseFile(event)">
+      <div id="preview"></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ====== CONFIG (ต้องตรงกับ index.html) ====== */
+const API='PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+const FISCAL_MONTHS=['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+const DISTRICTS=['เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
+const FIELDS=['red','yellow','suppressed','remaining','targetPct','resultPct','complaints','patrols','operations','arrests','status','note'];
+let SESSION={district:null,pin:null,role:null};
+let importRows=[];
+
+/* init selects */
+document.getElementById('district').innerHTML=DISTRICTS.map(d=>`<option>${d}</option>`).join('');
+document.getElementById('fMonth').innerHTML=FISCAL_MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+document.getElementById('fMonth').value=8; // พ.ค.
+
+/* ====== JSONP ====== */
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    if(!API||API.indexOf('PASTE_')===0){reject('ยังไม่ได้ตั้งค่า URL ของ Apps Script (ตัวแปร API)');return;}
+    const cb='cb_'+Math.random().toString(36).slice(2);
+    const t=setTimeout(()=>{cleanup();reject('หมดเวลาเชื่อมต่อ');},15000);
+    function cleanup(){delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);clearTimeout(t);}
+    window[cb]=d=>{cleanup();resolve(d);};
+    const q=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const s=document.createElement('script');s.src=API+'?'+q+'&callback='+cb;
+    s.onerror=()=>{cleanup();reject('เชื่อมต่อเครือข่ายไม่สำเร็จ');};
+    document.body.appendChild(s);
+  });
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3200);}
+
+/* ====== Auth ====== */
+async function doAuth(){
+  const district=document.getElementById('district').value;
+  const pin=document.getElementById('pin').value.trim();
+  if(!pin){toast('กรุณากรอกรหัสผ่าน');return;}
+  try{
+    const d=await jsonp({action:'auth',district,pin});
+    if(d&&d.ok){
+      SESSION={district,pin,role:d.role};
+      document.getElementById('loginCard').style.display='none';
+      document.getElementById('editCard').classList.add('show');
+      document.getElementById('whoTag').textContent=(d.role==='admin'?'ผู้ดูแลระบบ • ':'')+district;
+      if(d.role==='admin'){document.getElementById('importZone').classList.add('show');}
+      loadLatest();
+    }else{ toast('✕ '+(d&&d.error||'รหัสผ่านไม่ถูกต้อง')); }
+  }catch(e){ toast('✕ '+e); }
+}
+function logout(){location.reload();}
+
+/* ====== อ่านค่าล่าสุด ====== */
+async function loadLatest(){
+  const fy=+document.getElementById('fFy').value;
+  const mo=+document.getElementById('fMonth').value;
+  try{
+    const d=await jsonp({action:'read',fy});
+    if(d&&d.ok){
+      const rows=d.rows.filter(r=>r.district===SESSION.district);
+      // หาแถวของเดือนที่เลือก ถ้าไม่มีใช้เดือนล่าสุด
+      let rec=rows.find(r=>+r.monthOrder===mo) || rows.sort((a,b)=>b.monthOrder-a.monthOrder)[0];
+      if(rec){ fill(rec); toast('โหลดข้อมูล '+(rec.month||'')+' มาแก้ไขแล้ว'); }
+      else { clearForm(); toast('ยังไม่มีข้อมูลของอำเภอนี้ — กรอกใหม่ได้เลย'); }
+    }
+  }catch(e){ toast('✕ '+e); }
+}
+function fill(r){
+  document.getElementById('fMonth').value=r.monthOrder||8;
+  FIELDS.forEach(f=>{const el=document.getElementById(f);if(el)el.value=(r[f]!=null?r[f]:'');});
+}
+function clearForm(){FIELDS.forEach(f=>{const el=document.getElementById(f);if(el)el.value=(f==='targetPct'||f==='resultPct')?100:(f==='status'||f==='note'?'':0);});}
+
+/* ====== บันทึก ====== */
+async function saveRow(){
+  const fy=+document.getElementById('fFy').value;
+  const mo=+document.getElementById('fMonth').value;
+  const p={action:'save',district:SESSION.district,pin:SESSION.pin,
+    fiscalYear:fy,monthOrder:mo,month:FISCAL_MONTHS[mo-1]};
+  FIELDS.forEach(f=>{p[f]=document.getElementById(f).value;});
+  toast('กำลังบันทึก…');
+  try{
+    const d=await jsonp(p);
+    if(d&&d.ok) toast('✓ บันทึกสำเร็จ ('+FISCAL_MONTHS[mo-1]+' '+fy+')');
+    else toast('✕ '+(d&&d.error||'บันทึกไม่สำเร็จ'));
+  }catch(e){ toast('✕ '+e); }
+}
+
+/* ====== ส่งออก Excel (อำเภอนี้) ====== */
+async function exportDistrict(){
+  const fy=+document.getElementById('fFy').value;
+  try{
+    const d=await jsonp({action:'read',fy});
+    const rows=(d&&d.ok?d.rows:[]).filter(r=>r.district===SESSION.district);
+    if(!rows.length){toast('ยังไม่มีข้อมูลให้ส่งออก');return;}
+    buildXlsx(rows,`ผู้มีอิทธิพล_${SESSION.district}_${fy}.xlsx`);
+  }catch(e){ toast('✕ '+e); }
+}
+
+/* ====== เทมเพลต ====== */
+const TPL_HEADERS=[['ปีงบประมาณ','ลำดับเดือน(1=ต.ค.,12=ก.ย.)','อำเภอ','สีแดง','สีเหลือง','ปราบปราม/ถอดถอน','คงเหลือ','เป้าหมาย%','ผล%','รับแจ้งเบาะแส','ลงพื้นที่','ปฏิบัติการ','จับกุม','ผลการดำเนินงาน','หมายเหตุ']];
+const TPL_KEYS=['fiscalYear','monthOrder','district','red','yellow','suppressed','remaining','targetPct','resultPct','complaints','patrols','operations','arrests','status','note'];
+function downloadTemplate(){
+  const wb=XLSX.utils.book_new();
+  const data=TPL_HEADERS.slice();
+  DISTRICTS.forEach(d=>data.push([2569,8,d,0,0,0,0,100,100,0,0,0,0,'',''])); 
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=TPL_HEADERS[0].map(h=>({wch:Math.max(10,h.length+2)}));
+  XLSX.utils.book_append_sheet(wb,ws,'ข้อมูลรายอำเภอ');
+  XLSX.writeFile(wb,'เทมเพลต_ผู้มีอิทธิพล_นภ.xlsx');
+}
+function buildXlsx(rows,filename){
+  const data=[TPL_HEADERS[0].slice()];
+  rows.forEach(r=>data.push(TPL_KEYS.map(k=>r[k]!=null?r[k]:'')));
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=TPL_HEADERS[0].map(h=>({wch:Math.max(10,h.length+2)}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'ข้อมูล');
+  XLSX.writeFile(wb,filename);
+}
+
+/* ====== นำเข้า Excel ====== */
+function parseFile(ev){
+  const file=ev.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(e.target.result,{type:'binary'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    // ข้ามหัวตาราง (แถวแรก)
+    const body=aoa.slice(1).filter(r=>r[2]); // ต้องมีชื่ออำเภอ
+    importRows=body.map(r=>{
+      const o={};TPL_KEYS.forEach((k,i)=>o[k]=r[i]);
+      o.month=FISCAL_MONTHS[(+o.monthOrder||1)-1]||'';
+      return o;
+    });
+    renderPreview();
+  };
+  reader.readAsBinaryString(file);
+}
+function renderPreview(){
+  if(!importRows.length){document.getElementById('preview').innerHTML='<p class="hint">ไม่พบข้อมูลในไฟล์</p>';return;}
+  let t='<table><thead><tr><th>ปีงบ</th><th>เดือน</th><th>อำเภอ</th><th>แดง</th><th>เหลือง</th><th>ปราบปราม</th><th>คงเหลือ</th><th>ผล%</th></tr></thead><tbody>';
+  importRows.forEach(r=>{t+=`<tr><td>${r.fiscalYear}</td><td>${r.month}</td><td style="text-align:left">${r.district}</td><td>${r.red}</td><td>${r.yellow}</td><td>${r.suppressed}</td><td>${r.remaining}</td><td>${r.resultPct}</td></tr>`;});
+  t+='</tbody></table>';
+  t+=`<div style="margin-top:12px"><button class="btn green" onclick="commitImport()">✓ ยืนยันนำเข้า ${importRows.length} รายการ</button></div>`;
+  document.getElementById('preview').innerHTML=t;
+}
+async function commitImport(){
+  if(SESSION.role!=='admin'){toast('ต้องเป็นผู้ดูแลระบบ');return;}
+  toast('กำลังนำเข้า…');
+  try{
+    const d=await jsonp({action:'bulk',pin:SESSION.pin,rows:JSON.stringify(importRows)});
+    if(d&&d.ok) toast('✓ นำเข้าสำเร็จ '+d.imported+' รายการ');
+    else toast('✕ '+(d&&d.error||'นำเข้าไม่สำเร็จ'));
+  }catch(e){ toast('✕ '+e); }
+}
+</script>
+</body>
+</html>

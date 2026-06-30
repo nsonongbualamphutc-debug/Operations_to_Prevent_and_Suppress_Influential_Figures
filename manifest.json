@@ -1,0 +1,12 @@
+{
+  "name": "ผู้มีอิทธิพล จ.หนองบัวลำภู",
+  "short_name": "ผู้มีอิทธิพล นภ.",
+  "description": "ศูนย์ข้อมูลการป้องกันและปราบปรามผู้มีอิทธิพล จังหวัดหนองบัวลำภู",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a1428",
+  "theme_color": "#0a1428",
+  "icons": [
+    { "src": "province-seal.png", "sizes": "300x300", "type": "image/png", "purpose": "any" }
+  ]
+}

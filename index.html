@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a1428">
+<title>ศูนย์ข้อมูลการป้องกันและปราบปรามผู้มีอิทธิพล จังหวัดหนองบัวลำภู</title>
+<link rel="icon" href="province-seal.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ผู้มีอิทธิพล นภ.">
+<link rel="apple-touch-icon" href="province-seal.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0a1428; --bg2:#0e1d3a; --panel:rgba(20,36,68,.62); --panel2:rgba(15,28,56,.85);
+  --stroke:rgba(120,170,255,.16); --txt:#eaf1ff; --muted:#9fb4d8;
+  --gold:#f5c451; --cyan:#3fd0ff; --red:#ff5a6e; --yellow:#ffcb47; --green:#34e3a4;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+}
+[data-theme="light"]{
+  --bg:#eef3fb; --bg2:#dfe8f6; --panel:rgba(255,255,255,.82); --panel2:rgba(255,255,255,.95);
+  --stroke:rgba(20,60,130,.14); --txt:#11203c; --muted:#566787; --shadow:0 16px 40px rgba(20,50,110,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Sarabun','Kanit',sans-serif; color:var(--txt);
+  background:
+     radial-gradient(1100px 600px at 12% -8%, rgba(63,208,255,.16), transparent 60%),
+     radial-gradient(1000px 560px at 95% 6%, rgba(245,196,81,.14), transparent 55%),
+     linear-gradient(160deg,var(--bg),var(--bg2));
+  background-attachment:fixed; min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px}
+h1,h2,h3,.k-num,.brand-title{font-family:'Kanit',sans-serif}
+
+/* ---------- Header ---------- */
+.top{display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+  background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--stroke);
+  border-radius:22px;padding:16px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.top:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(245,196,81,.08),transparent 40%);pointer-events:none}
+.logos{display:flex;gap:10px;align-items:center}
+.logos img{height:58px;width:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.brand{flex:1;min-width:220px}
+.brand-title{font-size:1.32rem;font-weight:700;line-height:1.2;letter-spacing:.2px}
+.brand-sub{color:var(--muted);font-size:.86rem;margin-top:3px}
+.brand-sub b{color:var(--gold)}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{cursor:pointer;border:1px solid var(--stroke);background:var(--panel2);color:var(--txt);
+  font-family:'Kanit';font-size:.85rem;padding:9px 14px;border-radius:12px;display:inline-flex;gap:7px;align-items:center;
+  transition:.18s transform,.18s box-shadow,.18s background}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.28)}
+.btn.gold{background:linear-gradient(135deg,#f5c451,#e0a32e);color:#2a1d00;border:none;font-weight:600}
+.btn.cyan{background:linear-gradient(135deg,#3fd0ff,#1f9ed6);color:#022235;border:none;font-weight:600}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(52,227,164,.18)}
+.status-pill{display:inline-flex;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);
+  border:1px solid var(--stroke);border-radius:999px;padding:6px 12px;background:var(--panel2)}
+
+/* ---------- Filters ---------- */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:.72rem;color:var(--muted);padding-left:4px}
+select{font-family:'Sarabun';font-size:.9rem;color:var(--txt);background:var(--panel2);
+  border:1px solid var(--stroke);border-radius:12px;padding:9px 12px;min-width:150px;cursor:pointer}
+select:focus{outline:2px solid var(--cyan)}
+
+/* ---------- Verdict hero ---------- */
+.verdict{margin-top:16px;border-radius:22px;padding:22px 24px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(52,227,164,.16),rgba(63,208,255,.08));
+  border:1px solid rgba(52,227,164,.30);box-shadow:var(--shadow)}
+.verdict.warn{background:linear-gradient(135deg,rgba(255,203,71,.18),rgba(255,90,110,.08));border-color:rgba(255,203,71,.34)}
+.verdict.alert{background:linear-gradient(135deg,rgba(255,90,110,.20),rgba(255,90,110,.06));border-color:rgba(255,90,110,.4)}
+.verdict .vlabel{font-size:.8rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.verdict .vmain{font-family:'Kanit';font-size:1.5rem;font-weight:700;margin-top:6px;line-height:1.35}
+.verdict .vmain b{color:var(--green)}
+.verdict.warn .vmain b,.verdict.alert .vmain b{color:var(--gold)}
+.verdict .vsub{color:var(--muted);margin-top:8px;font-size:.92rem}
+.copybtn{position:absolute;top:16px;right:16px}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px}
+.kpi{background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--stroke);
+  border-radius:18px;padding:16px 16px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi:after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent,rgba(63,208,255,.25)),transparent 70%)}
+.kpi .klabel{font-size:.82rem;color:var(--muted)}
+.kpi .k-num{font-size:2.05rem;font-weight:800;margin-top:6px;line-height:1}
+.kpi .kunit{font-size:.85rem;color:var(--muted);font-weight:400;margin-left:4px}
+.kpi .ktag{font-size:.74rem;margin-top:8px;color:var(--muted)}
+.kpi.red .k-num{color:var(--red)} .kpi.yellow .k-num{color:var(--yellow)}
+.kpi.green .k-num{color:var(--green)} .kpi.cyan .k-num{color:var(--cyan)} .kpi.gold .k-num{color:var(--gold)}
+
+/* ---------- Grid panels ---------- */
+.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-top:16px}
+.card{background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--stroke);
+  border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:1.02rem;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.card h3 .bar{width:5px;height:18px;border-radius:3px;background:linear-gradient(var(--cyan),var(--gold))}
+.card .desc{color:var(--muted);font-size:.8rem;margin-bottom:10px}
+.chart-box{position:relative;height:280px}
+.chart-box.tall{height:330px}
+
+/* ---------- Table ---------- */
+.tbl-wrap{overflow:auto;border-radius:14px;border:1px solid var(--stroke)}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:640px}
+th,td{padding:11px 12px;text-align:center;border-bottom:1px solid var(--stroke)}
+th{background:var(--panel2);color:var(--muted);font-family:'Kanit';font-weight:500;font-size:.8rem;position:sticky;top:0}
+td:first-child,th:first-child{text-align:left}
+tbody tr:hover{background:rgba(63,208,255,.06)}
+tr.total{font-weight:700;background:rgba(245,196,81,.08)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.74rem;font-weight:600}
+.b-green{background:rgba(52,227,164,.16);color:var(--green)}
+.b-red{background:rgba(255,90,110,.16);color:var(--red)}
+.b-yellow{background:rgba(255,203,71,.16);color:#d99a00}
+.pill-red{color:var(--red);font-weight:700}.pill-yellow{color:#d99a00;font-weight:700}
+
+.foot{margin-top:26px;text-align:center;color:var(--muted);font-size:.82rem;line-height:1.7}
+.foot img{height:42px;opacity:.9;margin-bottom:6px}
+
+/* ---------- Presentation mode ---------- */
+#present{position:fixed;inset:0;z-index:9999;display:none;background:
+  radial-gradient(1200px 700px at 50% -10%,rgba(63,208,255,.22),transparent 60%),
+  linear-gradient(160deg,#081024,#0c1c3a);color:#eaf1ff;overflow:hidden}
+#present.on{display:block}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:5vh 6vw;opacity:0;transform:scale(.98);transition:.6s;pointer-events:none}
+.slide.active{opacity:1;transform:scale(1);pointer-events:auto}
+.slide .s-eyebrow{color:var(--gold);letter-spacing:3px;text-transform:uppercase;font-size:1.1vw;font-family:'Kanit'}
+.slide h2{font-family:'Kanit';font-weight:800;font-size:3.4vw;margin:14px 0;line-height:1.2}
+.slide .s-big{font-family:'Kanit';font-weight:800;font-size:9vw;line-height:1;
+  background:linear-gradient(135deg,#3fd0ff,#34e3a4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.slide .s-sub{color:#9fb4d8;font-size:1.5vw;margin-top:10px}
+.p-kpis{display:flex;gap:3vw;margin-top:3vh;flex-wrap:wrap;justify-content:center}
+.p-kpi{background:rgba(20,36,68,.6);border:1px solid rgba(120,170,255,.2);border-radius:22px;padding:3vh 3vw;min-width:16vw}
+.p-kpi .n{font-family:'Kanit';font-weight:800;font-size:4vw;line-height:1}
+.p-kpi .l{color:#9fb4d8;font-size:1.1vw;margin-top:8px}
+.p-chart{width:74vw;height:58vh;margin-top:2vh}
+.p-logos{position:absolute;top:4vh;left:4vw;display:flex;gap:14px;align-items:center}
+.p-logos img{height:7vh}
+.p-brand{position:absolute;top:4vh;right:4vw;text-align:right;font-family:'Kanit';font-size:1vw;color:#9fb4d8}
+.p-ctrl{position:absolute;bottom:3vh;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;z-index:5}
+.p-ctrl button{background:rgba(20,36,68,.8);border:1px solid rgba(120,170,255,.25);color:#eaf1ff;
+  width:46px;height:46px;border-radius:50%;font-size:1.1rem;cursor:pointer}
+.p-ctrl .exit{width:auto;border-radius:24px;padding:0 18px;font-family:'Kanit'}
+.p-dots{display:flex;gap:8px}.p-dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer}
+.p-dots i.on{background:var(--gold);width:26px;border-radius:6px}
+.p-progress{position:absolute;top:0;left:0;height:4px;background:linear-gradient(90deg,#3fd0ff,#f5c451);width:0;transition:width .3s}
+
+@media(max-width:1024px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.brand-title{font-size:1.05rem}.kpi .k-num{font-size:1.7rem}.logos img{height:46px}}
+@media print{body{background:#fff}.top-actions,.filters,.copybtn{display:none}.card,.kpi,.top{box-shadow:none}}
+.loading{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:14px;color:var(--muted)}
+.spin{width:42px;height:42px;border:4px solid var(--stroke);border-top-color:var(--cyan);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading"><div class="spin"></div><div>กำลังเชื่อมต่อฐานข้อมูล…</div></div>
+</div>
+
+<!-- ===== Presentation overlay ===== -->
+<div id="present">
+  <div class="p-progress" id="pProg"></div>
+  <div class="p-logos"><img src="province-seal.png" alt=""><img src="pok-logo.png" alt=""></div>
+  <div class="p-brand">การป้องกันและปราบปรามผู้มีอิทธิพล<br>จังหวัดหนองบัวลำภู</div>
+  <div id="slides"></div>
+  <div class="p-ctrl">
+    <button onclick="Present.prev()">‹</button>
+    <div class="p-dots" id="pDots"></div>
+    <button onclick="Present.toggle()" id="pPlay">⏸</button>
+    <button onclick="Present.next()">›</button>
+    <button class="exit" onclick="Present.stop()">✕ ออก</button>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+// 🔵 วาง URL ของ Web App (ลงท้าย /exec) ที่ได้จากการ Deploy Apps Script ตรงนี้
+const API = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+const FISCAL_MONTHS=['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+const DISTRICTS=['เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
+
+/* ตัวอย่างข้อมูล (ใช้แสดงเมื่อยังไม่ตั้งค่า API) — ตรงกับแผนปฏิบัติการ */
+const DEMO=[
+ {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'เมืองหนองบัวลำภู',red:0,yellow:2,suppressed:2,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
+ {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'ศรีบุญเรือง',red:0,yellow:0,suppressed:0,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
+ {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'นากลาง',red:0,yellow:2,suppressed:2,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
+ {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'โนนสัง',red:0,yellow:0,suppressed:0,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
+ {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'สุวรรณคูหา',red:1,yellow:0,suppressed:1,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''},
+ {fiscalYear:2569,month:'พ.ค.',monthOrder:8,district:'นาวัง',red:0,yellow:2,suppressed:2,remaining:0,targetPct:100,resultPct:100,complaints:0,patrols:0,operations:0,arrests:0,status:'ถอดถอนรายชื่อจากผู้มีอิทธิพลแล้ว',note:''}
+];
+
+let RAW=[], META=null, charts={};
+const state={fy:null, month:'ALL', district:'ALL', demo:false};
+
+/* ===================== JSONP ===================== */
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    if(!API || API.indexOf('PASTE_')===0){ reject('no-api'); return; }
+    const cb='cb_'+Math.random().toString(36).slice(2);
+    const t=setTimeout(()=>{cleanup();reject('timeout');},15000);
+    function cleanup(){ delete window[cb]; if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(t); }
+    window[cb]=(d)=>{cleanup();resolve(d);};
+    const q=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    const s=document.createElement('script');
+    s.src=API+'?'+q+'&callback='+cb;
+    s.onerror=()=>{cleanup();reject('neterr');};
+    document.body.appendChild(s);
+  });
+}
+
+/* ===================== Load ===================== */
+async function load(){
+  try{
+    const d=await jsonp({action:'read'});
+    if(d&&d.ok){ RAW=d.rows; }
+    else throw 'bad';
+  }catch(e){
+    RAW=DEMO.slice(); state.demo=true;
+  }
+  if(!RAW.length){ RAW=DEMO.slice(); state.demo=true; }
+  const fys=[...new Set(RAW.map(r=>+r.fiscalYear))].sort((a,b)=>b-a);
+  state.fy=fys[0];
+  render();
+}
+
+/* ===================== Helpers ===================== */
+function filtered(){
+  return RAW.filter(r=>+r.fiscalYear===+state.fy)
+    .filter(r=> state.month==='ALL' ? true : r.month===state.month)
+    .filter(r=> state.district==='ALL' ? true : r.district===state.district);
+}
+// ใช้ snapshot ล่าสุด (เดือนสูงสุด) ของแต่ละอำเภอ เมื่อเลือก "ทุกเดือน"
+function latestPerDistrict(rows){
+  const m={};
+  rows.forEach(r=>{ const k=r.district; if(!m[k]||+r.monthOrder>+m[k].monthOrder) m[k]=r; });
+  return DISTRICTS.filter(d=>m[d]).map(d=>m[d]);
+}
+function activeRows(){
+  const f=filtered();
+  return state.month==='ALL' ? latestPerDistrict(f) : f;
+}
+const sum=(a,k)=>a.reduce((s,r)=>s+(+r[k]||0),0);
+const fmt=n=>(+n||0).toLocaleString('th-TH');
+
+/* ===================== Render ===================== */
+function render(){
+  const rows=activeRows();
+  const totRed=sum(rows,'red'), totYellow=sum(rows,'yellow'),
+        totSupp=sum(rows,'suppressed'), totRemain=sum(rows,'remaining');
+  const avgTarget=rows.length?Math.round(sum(rows,'targetPct')/rows.length):0;
+  const avgResult=rows.length?Math.round(sum(rows,'resultPct')/rows.length):0;
+  const totEverWatched=totRed+totYellow;
+
+  const fys=[...new Set(RAW.map(r=>+r.fiscalYear))].sort((a,b)=>b-a);
+  const app=document.getElementById('app');
+  app.innerHTML=`
+   <header class="top">
+     <div class="logos"><img src="province-seal.png" alt="ตราจังหวัด"><img src="pok-logo.png" alt="ปกครอง"></div>
+     <div class="brand">
+       <div class="brand-title">ศูนย์ข้อมูลการป้องกันและปราบปรามผู้มีอิทธิพล</div>
+       <div class="brand-sub"><b>จังหวัดหนองบัวลำภู</b> • แผนปฏิบัติการ (Action Plan) ปีงบประมาณ ${state.fy}</div>
+     </div>
+     <div class="top-actions">
+       <span class="status-pill"><span class="dot"></span>${state.demo?'โหมดตัวอย่าง (ยังไม่เชื่อม API)':'เชื่อมต่อแล้ว'}</span>
+       <a class="btn cyan" href="input.html">✎ กรอก/แก้ไขข้อมูล</a>
+       <button class="btn gold" onclick="Present.start()">▶ โหมดนำเสนอ</button>
+       <button class="btn" onclick="exportCSV()">⬇ CSV</button>
+       <button class="btn" onclick="window.print()">🖨 รายงาน</button>
+       <button class="btn" onclick="toggleTheme()">🌗</button>
+     </div>
+   </header>
+
+   <div class="filters">
+     <div class="field"><label>ปีงบประมาณ</label>
+       <select id="fFy">${fys.map(y=>`<option ${y===state.fy?'selected':''}>${y}</option>`).join('')}</select></div>
+     <div class="field"><label>ช่วงเวลา (เดือน)</label>
+       <select id="fMonth"><option value="ALL">ทุกเดือน (ล่าสุด)</option>
+       ${monthsForFy().map(m=>`<option ${m===state.month?'selected':''}>${m}</option>`).join('')}</select></div>
+     <div class="field"><label>อำเภอ</label>
+       <select id="fDist"><option value="ALL">ทุกอำเภอ</option>
+       ${DISTRICTS.map(d=>`<option ${d===state.district?'selected':''}>${d}</option>`).join('')}</select></div>
+   </div>
+
+   ${verdictHTML(totRemain,totSupp,avgResult,totRed,totYellow)}
+
+   <div class="kpis">
+     ${kpi('cyan','ผู้มีอิทธิพลคงเหลือ',fmt(totRemain),'ราย','สถานะปัจจุบันในพื้นที่')}
+     ${kpi('green','ปราบปราม/ถอดถอนแล้ว',fmt(totSupp),'ราย','สะสมตามแผน')}
+     ${kpi('red','ระดับสีแดง (ผู้มีอิทธิพล)',fmt(totRed),'ราย','ที่เคยเฝ้าระวัง')}
+     ${kpi('yellow','ระดับสีเหลือง (เฝ้าระวัง)',fmt(totYellow),'ราย','ที่เคยเฝ้าระวัง')}
+     ${kpi('gold','ผลการดำเนินการ',fmt(avgResult),'%',`เป้าหมาย ${avgTarget}%`)}
+   </div>
+
+   <div class="grid">
+     <div class="card">
+       <h3><span class="bar"></span>เปรียบเทียบรายอำเภอ — ระดับเฝ้าระวัง</h3>
+       <div class="desc">จำนวนบุคคลระดับสีแดง/สีเหลือง ที่เคยอยู่ในบัญชีเฝ้าระวัง แยกรายอำเภอ</div>
+       <div class="chart-box"><canvas id="cDistrict"></canvas></div>
+     </div>
+     <div class="card">
+       <h3><span class="bar"></span>สัดส่วนสถานะรวม</h3>
+       <div class="desc">ภาพรวมการจัดการบัญชีเฝ้าระวังของจังหวัด</div>
+       <div class="chart-box"><canvas id="cDonut"></canvas></div>
+     </div>
+   </div>
+
+   <div class="grid">
+     <div class="card">
+       <h3><span class="bar"></span>แนวโน้มผู้มีอิทธิพลคงเหลือ (รายเดือน)</h3>
+       <div class="desc">ปีงบประมาณ ${state.fy} — รวมทั้งจังหวัด</div>
+       <div class="chart-box"><canvas id="cTrend"></canvas></div>
+     </div>
+     <div class="card">
+       <h3><span class="bar"></span>ผลการดำเนินงานตามมาตรการ (รายอำเภอ)</h3>
+       <div class="desc">รับแจ้งเบาะแส • ลงพื้นที่เฝ้าระวัง • ปฏิบัติการปราบปราม • จับกุม/ดำเนินคดี</div>
+       <div class="chart-box"><canvas id="cOps"></canvas></div>
+     </div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+     <h3><span class="bar"></span>ตารางสรุปรายอำเภอ</h3>
+     <div class="desc">คลิกหัวข้อ “กรอก/แก้ไขข้อมูล” เพื่อปรับปรุงข้อมูลของแต่ละอำเภอ</div>
+     <div class="tbl-wrap">${tableHTML(rows,totRed,totYellow,totSupp,totRemain)}</div>
+   </div>
+
+   <div class="foot">
+     <img src="province-seal.png" alt=""><br>
+     ที่ทำการปกครองจังหวัดหนองบัวลำภู • ศูนย์ดำรงธรรมจังหวัดหนองบัวลำภู<br>
+     ข้อมูลตามแผนปฏิบัติการขับเคลื่อนการป้องกันและปราบปรามผู้มีอิทธิพล จังหวัดหนองบัวลำภู
+   </div>`;
+
+  // bind filters
+  document.getElementById('fFy').onchange=e=>{state.fy=+e.target.value;state.month='ALL';render();};
+  document.getElementById('fMonth').onchange=e=>{state.month=e.target.value;render();};
+  document.getElementById('fDist').onchange=e=>{state.district=e.target.value;render();};
+
+  drawCharts(rows);
+}
+
+function monthsForFy(){
+  const ms=[...new Set(RAW.filter(r=>+r.fiscalYear===+state.fy).map(r=>r.month))];
+  return FISCAL_MONTHS.filter(m=>ms.includes(m));
+}
+function kpi(cls,label,num,unit,tag){
+  return `<div class="kpi ${cls}"><div class="klabel">${label}</div>
+    <div class="k-num">${num}<span class="kunit">${unit}</span></div><div class="ktag">${tag}</div></div>`;
+}
+function verdictHTML(remain,supp,result,red,yellow){
+  let cls='', main='', sub='';
+  if(remain===0){
+    cls=''; main=`ปัจจุบันจังหวัดหนองบัวลำภู <b>ไม่มีผู้มีอิทธิพลคงเหลือ</b> ในพื้นที่`;
+    sub=`ดำเนินการปราบปราม/ถอดถอนบัญชีเฝ้าระวังแล้ว ${fmt(supp)} ราย • ผลการดำเนินการเฉลี่ย ${result}% — คงการเฝ้าระวังอย่างต่อเนื่อง`;
+  }else if(remain<=2){
+    cls='warn'; main=`มีผู้มีอิทธิพลคงเหลือ <b>${fmt(remain)} ราย</b> อยู่ระหว่างดำเนินการ`;
+    sub=`เร่งรัดตามมาตรการตัดวงจรอิทธิพล • ปราบปรามแล้ว ${fmt(supp)} ราย • ผลการดำเนินการ ${result}%`;
+  }else{
+    cls='alert'; main=`เฝ้าระวังพิเศษ — คงเหลือ <b>${fmt(remain)} ราย</b>`;
+    sub=`ต้องบูรณาการกำลังฝ่ายปกครอง ตำรวจ และความมั่นคงโดยเร่งด่วน`;
+  }
+  return `<div class="verdict ${cls}">
+    <div class="vlabel">บทสรุปผู้บริหาร • ${monthLabel()}</div>
+    <div class="vmain">${main}</div><div class="vsub">${sub}</div>
+    <button class="btn copybtn" onclick="copyVerdict()">⧉ คัดลอกสรุป</button></div>`;
+}
+function monthLabel(){ return state.month==='ALL'?`ข้อมูลล่าสุด ปีงบ ${state.fy}`:`${state.month} ปีงบ ${state.fy}`; }
+function copyVerdict(){
+  const r=activeRows();
+  const txt=`📌 สรุปสถานการณ์ผู้มีอิทธิพล จ.หนองบัวลำภู (${monthLabel()})\n`+
+    `• คงเหลือปัจจุบัน: ${fmt(sum(r,'remaining'))} ราย\n`+
+    `• ปราบปราม/ถอดถอนแล้ว: ${fmt(sum(r,'suppressed'))} ราย\n`+
+    `• ระดับสีแดง ${fmt(sum(r,'red'))} ราย / สีเหลือง ${fmt(sum(r,'yellow'))} ราย\n`+
+    `• ผลการดำเนินการเฉลี่ย: ${r.length?Math.round(sum(r,'resultPct')/r.length):0}%`;
+  navigator.clipboard.writeText(txt).then(()=>toast('คัดลอกสรุปแล้ว — พร้อมส่งเข้ากลุ่มไลน์'));
+}
+
+function tableHTML(rows,tr,ty,ts,trem){
+  const map={}; rows.forEach(r=>map[r.district]=r);
+  let body=DISTRICTS.map((d,i)=>{
+    const r=map[d]||{red:0,yellow:0,suppressed:0,remaining:0,targetPct:0,resultPct:0,status:'-'};
+    return `<tr>
+      <td>${i+1}. ${d}</td>
+      <td>${r.red?`<span class="pill-red">${r.red}</span>`:'-'}</td>
+      <td>${r.yellow?`<span class="pill-yellow">${r.yellow}</span>`:'-'}</td>
+      <td>${fmt(r.suppressed)}</td>
+      <td>${r.remaining>0?`<span class="badge b-red">${r.remaining}</span>`:`<span class="badge b-green">0</span>`}</td>
+      <td>${fmt(r.resultPct)}%</td>
+      <td style="text-align:left;font-size:.82rem">${r.status||'-'}</td></tr>`;
+  }).join('');
+  return `<table><thead><tr>
+    <th>อำเภอ</th><th>สีแดง</th><th>สีเหลือง</th><th>ปราบปราม/ถอดถอน</th>
+    <th>คงเหลือ</th><th>ผลดำเนินการ</th><th>ผลการดำเนินงาน</th></tr></thead>
+    <tbody>${body}
+    <tr class="total"><td>รวมทั้งจังหวัด</td><td>${fmt(tr)}</td><td>${fmt(ty)}</td>
+    <td>${fmt(ts)}</td><td>${trem>0?`<span class="badge b-red">${fmt(trem)}</span>`:`<span class="badge b-green">0</span>`}</td>
+    <td>-</td><td style="text-align:left">ปัจจุบันผู้มีอิทธิพลคงเหลือ ${fmt(trem)} ราย</td></tr>
+    </tbody></table>`;
+}
+
+/* ===================== Charts ===================== */
+function gridColor(){return getComputedStyle(document.body).getPropertyValue('--stroke');}
+function txtColor(){return getComputedStyle(document.body).getPropertyValue('--muted');}
+function destroy(){Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});charts={};}
+function drawCharts(rows){
+  destroy();
+  Chart.defaults.font.family="'Sarabun','Kanit',sans-serif";
+  Chart.defaults.color=txtColor();
+  const map={}; rows.forEach(r=>map[r.district]=r);
+  const labels=DISTRICTS;
+  const red=labels.map(d=>map[d]?+map[d].red:0);
+  const yellow=labels.map(d=>map[d]?+map[d].yellow:0);
+
+  charts.district=new Chart(document.getElementById('cDistrict'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'สีแดง (ผู้มีอิทธิพล)',data:red,backgroundColor:'#ff5a6e',borderRadius:6,stack:'s'},
+      {label:'สีเหลือง (เฝ้าระวัง)',data:yellow,backgroundColor:'#ffcb47',borderRadius:6,stack:'s'}
+    ]},
+    options:baseOpt({stacked:true})
+  });
+
+  const tr=sum(rows,'red'),ty=sum(rows,'yellow'),ts=sum(rows,'suppressed'),trem=sum(rows,'remaining');
+  const dData=(ts||trem)?[ts||0,trem||0]:[1,0];
+  const dLabels=(ts||trem)?['ดำเนินการ/ถอดถอนแล้ว','คงเหลือในพื้นที่']:['ไม่อยู่ในบัญชีเฝ้าระวัง','คงเหลือในพื้นที่'];
+  charts.donut=new Chart(document.getElementById('cDonut'),{
+    type:'doughnut',
+    data:{labels:dLabels,
+      datasets:[{data:dData,
+        backgroundColor:['#34e3a4','#ff5a6e'],borderWidth:0,hoverOffset:6}]},
+    options:{plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:14}},
+      tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.parsed)+' ราย'}}},cutout:'64%'}
+  });
+
+  // แนวโน้มรายเดือน (ทั้งจังหวัด)
+  const fyRows=RAW.filter(r=>+r.fiscalYear===+state.fy);
+  const trendLabels=monthsForFy().length?monthsForFy():[FISCAL_MONTHS[7]];
+  const remainByMonth=trendLabels.map(m=>sum(fyRows.filter(r=>r.month===m),'remaining'));
+  const suppByMonth=trendLabels.map(m=>sum(fyRows.filter(r=>r.month===m),'suppressed'));
+  charts.trend=new Chart(document.getElementById('cTrend'),{
+    type:'line',
+    data:{labels:trendLabels,datasets:[
+      {label:'คงเหลือ',data:remainByMonth,borderColor:'#3fd0ff',backgroundColor:'rgba(63,208,255,.15)',fill:true,tension:.35,borderWidth:3,pointRadius:4},
+      {label:'ปราบปราม/ถอดถอนสะสม',data:suppByMonth,borderColor:'#34e3a4',backgroundColor:'rgba(52,227,164,.10)',fill:true,tension:.35,borderWidth:2,pointRadius:3}
+    ]},
+    options:baseOpt({})
+  });
+
+  charts.ops=new Chart(document.getElementById('cOps'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'รับแจ้งเบาะแส',data:labels.map(d=>map[d]?+map[d].complaints:0),backgroundColor:'#3fd0ff',borderRadius:5},
+      {label:'ลงพื้นที่เฝ้าระวัง',data:labels.map(d=>map[d]?+map[d].patrols:0),backgroundColor:'#f5c451',borderRadius:5},
+      {label:'ปฏิบัติการปราบปราม',data:labels.map(d=>map[d]?+map[d].operations:0),backgroundColor:'#a78bfa',borderRadius:5},
+      {label:'จับกุม/ดำเนินคดี',data:labels.map(d=>map[d]?+map[d].arrests:0),backgroundColor:'#ff5a6e',borderRadius:5}
+    ]},
+    options:baseOpt({})
+  });
+}
+function baseOpt(o){
+  return {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:14}}},
+    scales:{
+      x:{stacked:!!o.stacked,grid:{display:false},ticks:{font:{size:11}}},
+      y:{stacked:!!o.stacked,beginAtZero:true,grid:{color:gridColor()},ticks:{precision:0}}
+    }};
+}
+
+/* ===================== Export / theme / toast ===================== */
+function exportCSV(){
+  const rows=RAW.filter(r=>+r.fiscalYear===+state.fy);
+  const cols=['fiscalYear','month','monthOrder','district','red','yellow','suppressed','remaining','targetPct','resultPct','complaints','patrols','operations','arrests','status','note'];
+  const head=['ปีงบ','เดือน','ลำดับเดือน','อำเภอ','สีแดง','สีเหลือง','ปราบปราม','คงเหลือ','เป้าหมาย%','ผล%','รับแจ้ง','ลงพื้นที่','ปฏิบัติการ','จับกุม','สถานะ','หมายเหตุ'];
+  let csv='\ufeff'+head.join(',')+'\n';
+  rows.forEach(r=>{csv+=cols.map(c=>`"${String(r[c]==null?'':r[c]).replace(/"/g,'""')}"`).join(',')+'\n';});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`ผู้มีอิทธิพล_นภ_${state.fy}.csv`; a.click();
+}
+function toggleTheme(){
+  const cur=document.body.getAttribute('data-theme');
+  document.body.setAttribute('data-theme',cur==='light'?'':'light');
+  try{localStorage.setItem('nbl_theme',document.body.getAttribute('data-theme'));}catch(e){}
+  render();
+}
+function toast(msg){
+  let t=document.createElement('div');t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#0e1d3a;color:#eaf1ff;padding:12px 20px;border-radius:12px;border:1px solid rgba(120,170,255,.3);z-index:99999;box-shadow:0 10px 30px rgba(0,0,0,.4);font-family:Sarabun';
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2600);
+}
+try{const th=localStorage.getItem('nbl_theme'); if(th)document.body.setAttribute('data-theme',th);}catch(e){}
+
+/* ===================== Presentation ===================== */
+const Present={
+  i:0, timer:null, playing:true, slides:[],
+  start(){
+    this.build(); document.getElementById('present').classList.add('on');
+    this.i=0; this.playing=true; this.show(0); this.play();
+    document.onkeydown=(e)=>{ if(!document.getElementById('present').classList.contains('on'))return;
+      if(e.key==='ArrowRight')this.next(); if(e.key==='ArrowLeft')this.prev();
+      if(e.key==='Escape')this.stop(); if(e.key===' '){e.preventDefault();this.toggle();}};
+  },
+  stop(){document.getElementById('present').classList.remove('on');clearInterval(this.timer);
+    Object.values(this._charts||{}).forEach(c=>{try{c.destroy()}catch(e){}});},
+  build(){
+    const rows=activeRows();
+    const tRed=sum(rows,'red'),tYel=sum(rows,'yellow'),tSup=sum(rows,'suppressed'),
+          tRem=sum(rows,'remaining'),res=rows.length?Math.round(sum(rows,'resultPct')/rows.length):0;
+    const S=[];
+    // Slide 1 — title
+    S.push(`<div class="slide"><div class="s-eyebrow">แผนปฏิบัติการ ปีงบประมาณ ${state.fy}</div>
+      <h2>การป้องกันและปราบปรามผู้มีอิทธิพล<br>จังหวัดหนองบัวลำภู</h2>
+      <div class="s-sub">ที่ทำการปกครองจังหวัดหนองบัวลำภู • บูรณาการฝ่ายปกครอง ตำรวจ และหน่วยความมั่นคง</div></div>`);
+    // Slide 2 — headline number
+    S.push(`<div class="slide"><div class="s-eyebrow">สถานะปัจจุบัน</div>
+      <div class="s-big">${fmt(tRem)}</div>
+      <h2>ผู้มีอิทธิพลคงเหลือในพื้นที่ (ราย)</h2>
+      <div class="s-sub">${tRem===0?'จังหวัดดำเนินการจัดการบัญชีเฝ้าระวังครบถ้วน — คงการเฝ้าระวังต่อเนื่อง':'อยู่ระหว่างเร่งรัดตามมาตรการตัดวงจรอิทธิพล'}</div></div>`);
+    // Slide 3 — KPI grid
+    S.push(`<div class="slide"><div class="s-eyebrow">ตัวชี้วัดหลัก</div><h2>ภาพรวมการดำเนินงาน</h2>
+      <div class="p-kpis">
+        <div class="p-kpi"><div class="n" style="color:#34e3a4">${fmt(tSup)}</div><div class="l">ปราบปราม/ถอดถอนแล้ว</div></div>
+        <div class="p-kpi"><div class="n" style="color:#ff5a6e">${fmt(tRed)}</div><div class="l">ระดับสีแดง</div></div>
+        <div class="p-kpi"><div class="n" style="color:#ffcb47">${fmt(tYel)}</div><div class="l">ระดับสีเหลือง</div></div>
+        <div class="p-kpi"><div class="n" style="color:#3fd0ff">${res}%</div><div class="l">ผลการดำเนินการ</div></div>
+      </div></div>`);
+    // Slide 4 — district chart
+    S.push(`<div class="slide"><div class="s-eyebrow">เปรียบเทียบรายอำเภอ</div><h2>บัญชีเฝ้าระวังแยกรายอำเภอ</h2>
+      <div class="p-chart"><canvas id="pcDist"></canvas></div></div>`);
+    // Slide 5 — closing
+    S.push(`<div class="slide"><div class="s-eyebrow">เป้าหมาย 4 เดือนสุดท้าย (มิ.ย.–ก.ย. ${state.fy})</div>
+      <h2>ดำเนินการต่อเรื่องผู้มีอิทธิพล<br>ในพื้นที่ <span style="color:#f5c451">ร้อยละ 100</span></h2>
+      <div class="s-sub">ส่งเสริมการมีส่วนร่วมภาคประชาชน • เฝ้าระวังในพื้นที่ • ปราบปรามจับกุม</div></div>`);
+    document.getElementById('slides').innerHTML=S.join('');
+    document.getElementById('pDots').innerHTML=S.map((_,i)=>`<i onclick="Present.show(${i})"></i>`).join('');
+    this.slides=[...document.querySelectorAll('#slides .slide')];
+    // build chart for slide 4
+    setTimeout(()=>{
+      const map={};rows.forEach(r=>map[r.district]=r);
+      this._charts={};
+      this._charts.dist=new Chart(document.getElementById('pcDist'),{
+        type:'bar',
+        data:{labels:DISTRICTS,datasets:[
+          {label:'สีแดง',data:DISTRICTS.map(d=>map[d]?+map[d].red:0),backgroundColor:'#ff5a6e',borderRadius:8,stack:'s'},
+          {label:'สีเหลือง',data:DISTRICTS.map(d=>map[d]?+map[d].yellow:0),backgroundColor:'#ffcb47',borderRadius:8,stack:'s'},
+          {label:'ถอดถอนแล้ว',data:DISTRICTS.map(d=>map[d]?+map[d].suppressed:0),backgroundColor:'#34e3a4',borderRadius:8,stack:'s2'}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{color:'#cfe0ff',font:{size:16}}}},
+          scales:{x:{stacked:true,ticks:{color:'#cfe0ff',font:{size:15}},grid:{display:false}},
+                  y:{stacked:true,beginAtZero:true,ticks:{color:'#9fb4d8',precision:0},grid:{color:'rgba(120,170,255,.12)'}}}}
+      });
+    },120);
+  },
+  show(i){
+    this.i=(i+this.slides.length)%this.slides.length;
+    this.slides.forEach((s,k)=>s.classList.toggle('active',k===this.i));
+    [...document.querySelectorAll('#pDots i')].forEach((d,k)=>d.classList.toggle('on',k===this.i));
+    document.getElementById('pProg').style.width=((this.i+1)/this.slides.length*100)+'%';
+  },
+  next(){this.show(this.i+1);this.play();},
+  prev(){this.show(this.i-1);this.play();},
+  play(){clearInterval(this.timer); if(!this.playing)return;
+    this.timer=setInterval(()=>this.show(this.i+1),6000);},
+  toggle(){this.playing=!this.playing;document.getElementById('pPlay').textContent=this.playing?'⏸':'▶';this.play();}
+};
+
+/* ===================== boot ===================== */
+load();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>
