@@ -1,4 +1,4 @@
-const CACHE='nbl-influence-v1';
+const CACHE='nbl-influence-v2';
 const CORE=['./','./index.html','./input.html','./province-seal.png','./pok-logo.png','./manifest.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

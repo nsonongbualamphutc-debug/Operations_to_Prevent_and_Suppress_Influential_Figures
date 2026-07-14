@@ -127,6 +127,75 @@ tr.total{font-weight:700;background:rgba(245,196,81,.08)}
 .foot{margin-top:26px;text-align:center;color:var(--muted);font-size:.82rem;line-height:1.7}
 .foot img{height:42px;opacity:.9;margin-bottom:6px}
 
+/* ---------- FX particle background ---------- */
+#fx{position:fixed;inset:0;z-index:-1;opacity:.55;pointer-events:none}
+[data-theme="light"] #fx{opacity:.22}
+
+/* ---------- Live bar + ticker ---------- */
+.livebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.live-pill{display:inline-flex;gap:8px;align-items:center;font-family:'Kanit';font-size:.8rem;
+  border:1px solid var(--stroke);border-radius:999px;padding:7px 14px;background:var(--panel2);white-space:nowrap}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:lpulse 1.6s infinite}
+@keyframes lpulse{0%{box-shadow:0 0 0 0 rgba(255,90,110,.55)}70%{box-shadow:0 0 0 9px rgba(255,90,110,0)}100%{box-shadow:0 0 0 0 rgba(255,90,110,0)}}
+.ticker{flex:1;min-width:240px;overflow:hidden;border:1px solid var(--stroke);border-radius:999px;
+  background:var(--panel2);height:36px;display:flex;align-items:center}
+.ticker .tk{display:inline-block;white-space:nowrap;padding-left:100%;animation:tkmove 30s linear infinite;font-size:.82rem;color:var(--muted)}
+.ticker .tk b{color:var(--txt)} .ticker .tk .ok{color:var(--green)} .ticker .tk .bad{color:var(--red)}
+@keyframes tkmove{to{transform:translateX(-100%)}}
+
+/* ---------- District tile map ---------- */
+.mapgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.tile{position:relative;border-radius:16px;padding:13px 14px 11px;cursor:pointer;border:1px solid var(--stroke);
+  background:linear-gradient(160deg,rgba(63,208,255,.06),rgba(20,36,68,.42));
+  transition:.22s transform,.22s box-shadow,.22s border-color}
+[data-theme="light"] .tile{background:linear-gradient(160deg,rgba(63,208,255,.10),rgba(255,255,255,.65))}
+.tile:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 12px 28px rgba(0,0,0,.30)}
+.tile .tname{font-family:'Kanit';font-size:.84rem;font-weight:600}
+.tile .tnum{font-family:'Kanit';font-size:1.85rem;font-weight:800;line-height:1.15;margin-top:2px}
+.tile .tchips{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.tile .chip{font-size:.67rem;padding:2px 8px;border-radius:999px;font-family:'Kanit'}
+.tile.ok{border-color:rgba(52,227,164,.32)} .tile.ok .tnum{color:var(--green)}
+.tile.ok:after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 26px rgba(52,227,164,.10);pointer-events:none}
+.tile.bad{border-color:rgba(255,90,110,.55);animation:tglow 2.2s infinite}
+.tile.bad .tnum{color:var(--red)}
+@keyframes tglow{0%,100%{box-shadow:0 0 0 0 rgba(255,90,110,0)}50%{box-shadow:0 0 22px 2px rgba(255,90,110,.28)}}
+.tile.sel{outline:2px solid var(--cyan);outline-offset:1px}
+.compass{font-size:.7rem;color:var(--muted);text-align:right;margin-top:9px}
+
+/* ---------- Radial gauge ---------- */
+.gaugewrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px 0 4px}
+.gauge{--p:0;width:190px;height:190px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(var(--green) calc(var(--p)*1%), rgba(120,170,255,.12) 0);
+  filter:drop-shadow(0 6px 22px rgba(52,227,164,.18))}
+.gauge:before{content:"";position:absolute;inset:15px;border-radius:50%;background:var(--panel2)}
+.gauge .gv{position:relative;font-family:'Kanit';font-weight:800;font-size:2.5rem;color:var(--green)}
+.gauge .gv small{font-size:1.05rem;color:var(--muted);font-weight:500;margin-left:2px}
+.gauge.lo{background:conic-gradient(var(--gold) calc(var(--p)*1%), rgba(120,170,255,.12) 0);
+  filter:drop-shadow(0 6px 22px rgba(245,196,81,.18))}
+.gauge.lo .gv{color:var(--gold)}
+.gstats{display:flex;gap:22px}
+.gstats div{text-align:center}
+.gstats .n{font-family:'Kanit';font-weight:700;font-size:1.2rem}
+.gstats .l{font-size:.7rem;color:var(--muted)}
+
+/* ---------- Scroll reveal ---------- */
+.rv{opacity:0;transform:translateY(16px);transition:.55s opacity,.55s transform}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- Verdict sweeping edge ---------- */
+.verdict:after{content:"";position:absolute;inset:-1px;border-radius:22px;padding:1px;pointer-events:none;
+  background:linear-gradient(120deg,transparent 32%,rgba(63,208,255,.55),transparent 68%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  background-size:220% 100%;animation:vsweep 4.5s linear infinite}
+@keyframes vsweep{to{background-position:-220% 0}}
+
+@media (prefers-reduced-motion:reduce){
+  .ticker .tk,.live-dot,.tile.bad,.verdict:after{animation:none}
+  .rv{opacity:1;transform:none;transition:none}
+}
+@media(max-width:700px){.mapgrid{grid-template-columns:repeat(2,1fr)}}
+
 /* ---------- Presentation mode ---------- */
 #present{position:fixed;inset:0;z-index:9999;display:none;background:
   radial-gradient(1200px 700px at 50% -10%,rgba(63,208,255,.22),transparent 60%),
@@ -158,13 +227,14 @@ tr.total{font-weight:700;background:rgba(245,196,81,.08)}
 
 @media(max-width:1024px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.brand-title{font-size:1.05rem}.kpi .k-num{font-size:1.7rem}.logos img{height:46px}}
-@media print{body{background:#fff}.top-actions,.filters,.copybtn{display:none}.card,.kpi,.top{box-shadow:none}}
+@media print{body{background:#fff}.top-actions,.filters,.copybtn,#fx,.livebar,.compass{display:none}.card,.kpi,.top{box-shadow:none}.rv{opacity:1;transform:none}}
 .loading{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:14px;color:var(--muted)}
 .spin{width:42px;height:42px;border:4px solid var(--stroke);border-top-color:var(--cyan);border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+<canvas id="fx" aria-hidden="true"></canvas>
 <div class="wrap" id="app">
   <div class="loading"><div class="spin"></div><div>กำลังเชื่อมต่อฐานข้อมูล…</div></div>
 </div>
@@ -293,6 +363,12 @@ function render(){
      </div>
    </header>
 
+   <div class="livebar">
+     <span class="live-pill"><span class="live-dot"></span> LIVE <span id="clock" style="margin-left:2px">--:--</span></span>
+     <span class="live-pill">⟳ รีเฟรชใน <b id="refCount" style="margin-left:4px">5:00</b></span>
+     <div class="ticker"><span class="tk" id="tk"></span></div>
+   </div>
+
    <div class="filters">
      <div class="field"><label>ปีงบประมาณ</label>
        <select id="fFy">${fys.map(y=>`<option ${y===state.fy?'selected':''}>${y}</option>`).join('')}</select></div>
@@ -307,11 +383,32 @@ function render(){
    ${verdictHTML(totRemain,totSupp,avgResult,totRed,totYellow)}
 
    <div class="kpis">
-     ${kpi('cyan','ผู้มีอิทธิพลคงเหลือ',fmt(totRemain),'ราย','สถานะปัจจุบันในพื้นที่')}
-     ${kpi('green','ปราบปราม/ถอดถอนแล้ว',fmt(totSupp),'ราย','สะสมตามแผน')}
-     ${kpi('red','ระดับสีแดง (ผู้มีอิทธิพล)',fmt(totRed),'ราย','ที่เคยเฝ้าระวัง')}
-     ${kpi('yellow','ระดับสีเหลือง (เฝ้าระวัง)',fmt(totYellow),'ราย','ที่เคยเฝ้าระวัง')}
-     ${kpi('gold','ผลการดำเนินการ',fmt(avgResult),'%',`เป้าหมาย ${avgTarget}%`)}
+     ${kpi('cyan','ผู้มีอิทธิพลคงเหลือ',totRemain,'ราย','สถานะปัจจุบันในพื้นที่')}
+     ${kpi('green','ปราบปราม/ถอดถอนแล้ว',totSupp,'ราย','สะสมตามแผน')}
+     ${kpi('red','ระดับสีแดง (ผู้มีอิทธิพล)',totRed,'ราย','ที่เคยเฝ้าระวัง')}
+     ${kpi('yellow','ระดับสีเหลือง (เฝ้าระวัง)',totYellow,'ราย','ที่เคยเฝ้าระวัง')}
+     ${kpi('gold','ผลการดำเนินการ',avgResult,'%',`เป้าหมาย ${avgTarget}%`)}
+   </div>
+
+   <div class="grid">
+     <div class="card">
+       <h3><span class="bar"></span>แผนที่สถานการณ์รายอำเภอ</h3>
+       <div class="desc">จัดวางตามภูมิศาสตร์โดยประมาณ — คลิกอำเภอเพื่อกรองทั้งหน้า (คลิกซ้ำเพื่อยกเลิก)</div>
+       <div class="mapgrid">${mapTiles(rows)}</div>
+       <div class="compass">⬆ ทิศเหนือ • ตะวันตก ← → ตะวันออก</div>
+     </div>
+     <div class="card">
+       <h3><span class="bar"></span>มาตรวัดผลการดำเนินการ</h3>
+       <div class="desc">ค่าเฉลี่ยทั้งจังหวัด เทียบเป้าหมาย ${avgTarget}%</div>
+       <div class="gaugewrap">
+         <div class="gauge" id="gauge"><div class="gv"><span id="gv">0</span><small>%</small></div></div>
+         <div class="gstats">
+           <div><div class="n" style="color:var(--green)">${fmt(totSupp)}</div><div class="l">ถอดถอนแล้ว</div></div>
+           <div><div class="n" style="color:var(--cyan)">${fmt(totRemain)}</div><div class="l">คงเหลือ</div></div>
+           <div><div class="n" style="color:var(--gold)">${fmt(totEverWatched)}</div><div class="l">เฝ้าระวังสะสม</div></div>
+         </div>
+       </div>
+     </div>
    </div>
 
    <div class="grid">
@@ -352,6 +449,7 @@ function render(){
   document.getElementById('fDist').onchange=e=>{state.district=e.target.value;render();};
 
   drawCharts(rows);
+  postRender(avgResult);
 }
 
 function monthsForFy(){
@@ -360,7 +458,7 @@ function monthsForFy(){
 }
 function kpi(cls,label,num,unit,tag){
   return `<div class="kpi ${cls}"><div class="klabel">${label}</div>
-    <div class="k-num">${num}<span class="kunit">${unit}</span></div><div class="ktag">${tag}</div></div>`;
+    <div class="k-num" data-cv="${+num||0}">0<span class="kunit">${unit}</span></div><div class="ktag">${tag}</div></div>`;
 }
 function verdictHTML(remain,supp,result,red,yellow){
   let cls='', main='', sub='';
@@ -504,7 +602,7 @@ function toast(msg){
   document.body.appendChild(t);setTimeout(()=>t.remove(),2600);
 }
 try{
-  const TV='2'; // bump to force every device back to dark once
+  const TV='3'; // bump to force every device back to dark once
   if(localStorage.getItem('nbl_theme_v')!==TV){localStorage.setItem('nbl_theme','');localStorage.setItem('nbl_theme_v',TV);}
   const th=localStorage.getItem('nbl_theme'); document.body.setAttribute('data-theme',th||'');
 }catch(e){document.body.setAttribute('data-theme','');}
@@ -583,6 +681,129 @@ const Present={
     this.timer=setInterval(()=>this.show(this.i+1),6000);},
   toggle(){this.playing=!this.playing;document.getElementById('pPlay').textContent=this.playing?'⏸':'▶';this.play();}
 };
+
+/* ===================== แผนที่กระเบื้อง / เอฟเฟกต์ ===================== */
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* จัดวางอำเภอตามภูมิศาสตร์โดยประมาณ: แถวบน=เหนือ (นาวัง-นากลาง-สุวรรณคูหา), แถวล่าง=ใต้ */
+const MAP_ORDER=['นาวัง','นากลาง','สุวรรณคูหา','ศรีบุญเรือง','เมืองหนองบัวลำภู','โนนสัง'];
+function mapTiles(rows){
+  const map={}; rows.forEach(r=>map[r.district]=r);
+  return MAP_ORDER.map(d=>{
+    const r=map[d]||{red:0,yellow:0,suppressed:0,remaining:0};
+    const bad=+r.remaining>0;
+    return `<div class="tile ${bad?'bad':'ok'} ${state.district===d?'sel':''}" onclick="pickDistrict('${d}')" title="คลิกเพื่อกรองเฉพาะ ${d}">
+      <div class="tname">${d}</div>
+      <div class="tnum">${bad?fmt(r.remaining):'✓'}</div>
+      <div class="tchips">
+        <span class="chip" style="background:rgba(255,90,110,.14);color:var(--red)">แดง ${fmt(r.red)}</span>
+        <span class="chip" style="background:rgba(255,203,71,.14);color:#d99a00">เหลือง ${fmt(r.yellow)}</span>
+        <span class="chip" style="background:rgba(52,227,164,.14);color:var(--green)">ถอด ${fmt(r.suppressed)}</span>
+      </div></div>`;
+  }).join('');
+}
+function pickDistrict(d){ state.district = (state.district===d?'ALL':d); render(); }
+
+function postRender(avgResult){
+  /* เผยการ์ดตอนเลื่อนถึง */
+  const els=document.querySelectorAll('.card,.kpi,.verdict,.livebar');
+  if(!REDUCE && 'IntersectionObserver' in window){
+    const io=new IntersectionObserver(es=>es.forEach(e=>{
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.1});
+    els.forEach(el=>{el.classList.add('rv');io.observe(el);});
+  }else{
+    els.forEach(el=>{el.classList.add('rv','in');});
+  }
+  /* ตัวเลขนับขึ้น */
+  document.querySelectorAll('.k-num[data-cv]').forEach(el=>countUp(el,+el.dataset.cv));
+  /* มาตรวัด */
+  animGauge(avgResult);
+  /* ตัววิ่งสถานะ */
+  buildTicker();
+}
+function countUp(el,target){
+  if(REDUCE){el.firstChild.nodeValue=fmt(target);return;}
+  const t0=performance.now(),dur=900;
+  (function step(t){
+    const p=Math.min(1,(t-t0)/dur), v=Math.round(target*(1-Math.pow(1-p,3)));
+    el.firstChild.nodeValue=fmt(v);
+    if(p<1)requestAnimationFrame(step);
+  })(t0);
+}
+function animGauge(v){
+  const g=document.getElementById('gauge'), gv=document.getElementById('gv');
+  if(!g||!gv)return;
+  g.classList.toggle('lo', v<100);
+  if(REDUCE){g.style.setProperty('--p',v);gv.textContent=v;return;}
+  const t0=performance.now(),dur=1100;
+  (function step(t){
+    const p=Math.min(1,(t-t0)/dur), val=Math.round(v*(1-Math.pow(1-p,3)));
+    g.style.setProperty('--p',val); gv.textContent=val;
+    if(p<1)requestAnimationFrame(step);
+  })(t0);
+}
+function buildTicker(){
+  const el=document.getElementById('tk'); if(!el)return;
+  const rows=activeRows(); const map={}; rows.forEach(r=>map[r.district]=r);
+  const parts=DISTRICTS.map(d=>{
+    const r=map[d]||{remaining:0};
+    return `<b>${d}</b> ${+r.remaining>0
+      ?`<span class="bad">คงเหลือ ${fmt(r.remaining)} ราย</span>`
+      :`<span class="ok">✓ ไม่มีผู้มีอิทธิพลคงเหลือ</span>`}`;
+  });
+  parts.push(`<b>ทั้งจังหวัด</b> ปราบปราม/ถอดถอนสะสม ${fmt(sum(rows,'suppressed'))} ราย`);
+  parts.push(`<b>ผลการดำเนินการ</b> เฉลี่ย ${rows.length?Math.round(sum(rows,'resultPct')/rows.length):0}%`);
+  el.innerHTML=parts.join('&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;');
+}
+
+/* นาฬิกาไทย + นับถอยหลังรีเฟรชอัตโนมัติ (5 นาที) */
+let refLeft=300;
+setInterval(()=>{
+  const c=document.getElementById('clock');
+  if(c){const d=new Date();
+    c.textContent=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' น. • '
+      +d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});}
+  const rc=document.getElementById('refCount');
+  if(rc){
+    refLeft--;
+    if(refLeft<=0){
+      refLeft=300;
+      const presenting=document.getElementById('present').classList.contains('on');
+      if(!state.demo && !presenting) load();   // ดึงข้อมูลใหม่เฉพาะเมื่อเชื่อม API แล้ว
+    }
+    rc.textContent=Math.floor(refLeft/60)+':'+String(refLeft%60).padStart(2,'0');
+  }
+},1000);
+
+/* พื้นหลังอนุภาคเชื่อมโยง (constellation) — ปิดอัตโนมัติเมื่อผู้ใช้ลดการเคลื่อนไหว */
+(function fx(){
+  const cv=document.getElementById('fx'); if(!cv)return;
+  if(REDUCE){cv.remove();return;}
+  const ctx=cv.getContext('2d'); let W,H,ps=[];
+  function size(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  size(); addEventListener('resize',size);
+  const N=Math.min(70,Math.floor(innerWidth*innerHeight/26000));
+  for(let i=0;i<N;i++)ps.push({x:Math.random()*W,y:Math.random()*H,
+    vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.6+.4});
+  (function loop(){
+    ctx.clearRect(0,0,W,H);
+    const light=document.body.getAttribute('data-theme')==='light';
+    ctx.fillStyle=light?'rgba(30,80,160,.5)':'rgba(140,200,255,.6)';
+    ps.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();
+    });
+    for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){
+      const a=ps[i],b=ps[j],dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;
+      if(d2<16900){
+        ctx.strokeStyle=(light?'rgba(30,80,160,':'rgba(120,180,255,')+(0.16*(1-d2/16900))+')';
+        ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      }
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
 
 /* ===================== boot ===================== */
 load();
