@@ -101,7 +101,14 @@ select:focus{outline:2px solid var(--cyan)}
 .kpi.green .k-num{color:var(--green)} .kpi.cyan .k-num{color:var(--cyan)} .kpi.gold .k-num{color:var(--gold)}
 
 /* ---------- Grid panels ---------- */
-.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-top:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+/* ผังแผนที่: แผนที่สูงกินซ้าย 2 แถว ขวาซ้อนมาตรวัด+โดนัท ให้สมดุลกัน */
+.grid-map{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:14px}
+.grid-map .mapcard{grid-row:span 2}
+.card.vc{display:flex;flex-direction:column}
+.card.vc .vfill{flex:1;display:flex;flex-direction:column;justify-content:center}
+.card.vc .chart-box{height:250px;width:100%;max-width:280px;flex:0 0 auto;margin:auto}
+.chart-box.wide{height:300px}
 .card{background:var(--panel);backdrop-filter:blur(12px);border:1px solid var(--stroke);
   border-radius:20px;padding:18px;box-shadow:var(--shadow)}
 .card h3{font-size:1.02rem;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -235,7 +242,7 @@ tr.total{font-weight:700;background:rgba(245,196,81,.08)}
 .p-dots i.on{background:var(--gold);width:26px;border-radius:6px}
 .p-progress{position:absolute;top:0;left:0;height:4px;background:linear-gradient(90deg,#3fd0ff,#f5c451);width:0;transition:width .3s}
 
-@media(max-width:1024px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1024px){.grid,.grid-map{grid-template-columns:1fr}.grid-map .mapcard{grid-row:auto}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.brand-title{font-size:1.05rem}.kpi .k-num{font-size:1.7rem}.logos img{height:46px}}
 @media print{body{background:#fff}.top-actions,.filters,.copybtn,#fx,.livebar,.mapmetrics{display:none}.card,.kpi,.top{box-shadow:none}.rv{opacity:1;transform:none}}
 .loading{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:14px;color:var(--muted)}
@@ -400,15 +407,16 @@ function render(){
      ${kpi('gold','ผลการดำเนินการ',avgResult,'%',`เป้าหมาย ${avgTarget}%`)}
    </div>
 
-   <div class="grid">
-     <div class="card">
+   <div class="grid-map">
+     <div class="card mapcard">
        <h3><span class="bar"></span>แผนที่สถานการณ์ — ลึกระดับตำบล</h3>
        <div class="desc">ระบายสีตามตัวชี้วัดที่เลือก • ชี้ตำบลเพื่ออ่านรายละเอียด • คลิกเพื่อกรองอำเภอ (คลิกซ้ำยกเลิก)</div>
        <div id="mapblock">${mapBlockHTML(rows)}</div>
      </div>
-     <div class="card">
+     <div class="card vc">
        <h3><span class="bar"></span>มาตรวัดผลการดำเนินการ</h3>
        <div class="desc">ค่าเฉลี่ยทั้งจังหวัด เทียบเป้าหมาย ${avgTarget}%</div>
+       <div class="vfill">
        <div class="gaugewrap">
          <div class="gauge" id="gauge"><div class="gv"><span id="gv">0</span><small>%</small></div></div>
          <div class="gstats">
@@ -417,6 +425,12 @@ function render(){
            <div><div class="n" style="color:var(--gold)">${fmt(totEverWatched)}</div><div class="l">เฝ้าระวังสะสม</div></div>
          </div>
        </div>
+       </div>
+     </div>
+     <div class="card vc">
+       <h3><span class="bar"></span>สัดส่วนสถานะรวม</h3>
+       <div class="desc">ภาพรวมการจัดการบัญชีเฝ้าระวังของจังหวัด</div>
+       <div class="chart-box"><canvas id="cDonut"></canvas></div>
      </div>
    </div>
 
@@ -427,23 +441,16 @@ function render(){
        <div class="chart-box"><canvas id="cDistrict"></canvas></div>
      </div>
      <div class="card">
-       <h3><span class="bar"></span>สัดส่วนสถานะรวม</h3>
-       <div class="desc">ภาพรวมการจัดการบัญชีเฝ้าระวังของจังหวัด</div>
-       <div class="chart-box"><canvas id="cDonut"></canvas></div>
-     </div>
-   </div>
-
-   <div class="grid">
-     <div class="card">
        <h3><span class="bar"></span>แนวโน้มผู้มีอิทธิพลคงเหลือ (รายเดือน)</h3>
        <div class="desc">ปีงบประมาณ ${state.fy} — รวมทั้งจังหวัด</div>
        <div class="chart-box"><canvas id="cTrend"></canvas></div>
      </div>
-     <div class="card">
-       <h3><span class="bar"></span>ผลการดำเนินงานตามมาตรการ (รายอำเภอ)</h3>
-       <div class="desc">รับแจ้งเบาะแส • ลงพื้นที่เฝ้าระวัง • ปฏิบัติการปราบปราม • จับกุม/ดำเนินคดี</div>
-       <div class="chart-box"><canvas id="cOps"></canvas></div>
-     </div>
+   </div>
+
+   <div class="card" style="margin-top:14px">
+     <h3><span class="bar"></span>ผลการดำเนินงานตามมาตรการ (รายอำเภอ)</h3>
+     <div class="desc">รับแจ้งเบาะแส • ลงพื้นที่เฝ้าระวัง • ปฏิบัติการปราบปราม • จับกุม/ดำเนินคดี</div>
+     <div class="chart-box wide"><canvas id="cOps"></canvas></div>
    </div>
 
    <div class="card" style="margin-top:14px">
